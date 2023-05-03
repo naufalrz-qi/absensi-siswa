@@ -1,34 +1,28 @@
 {% extends 'base.html' %}
 {% block main %}
-<table id="table-siswa">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nama Siswa</th>
-        </tr>
-    </thead>
-    <tbody id="tbody-siswa">
-    </tbody>
-</table>
+<label>Pilih Kelas:</label>
+<select id="kelas">
+   <option value="">Pilih Kelas</option>
+   <option value="1">Kelas 1</option>
+   <option value="2">Kelas 2</option>
+   <option value="3">Kelas 3</option>
+</select>
+<div id="siswa"></div>
 {% endblock %}
 {% block scriptjs %}
 <script>
-    $(document).ready(function() {
-        $.ajax({
-            url: "/get_siswa",
-            type: "GET",
-            dataType: "json",
-            success: function(data) {
-                for (var i = 0; i < data.length; i++) {
-                    var tr = "<tr>";
-                    tr += "<td>" + data[i].id + "</td>";
-                    tr += "<td>" + data[i].nama + "</td>";
-                    tr += "</tr>";
-                    $("#tbody-siswa").append(tr);
-                }
-            }
+    $(document).ready(function(){
+        $("#kelas").change(function(){
+           var kelasId = $(this).val();
+           $.ajax({
+              type: "POST",
+              url: "/siswa",
+              data: {kelas_id: kelasId},
+              success: function(response){
+                 $("#siswa").html(response);
+              }
+           });
         });
-    });
-    
+     });
 </script>
 {% endblock %}
