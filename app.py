@@ -33,8 +33,7 @@ def get_siswa():
             result = cursor.fetchall()
             data = []
             for row in result:
-                data.append(row)
-            
+                data.append(row)        
             # mengembalikan data sebagai response JSON
             return jsonify(data)
     except:
