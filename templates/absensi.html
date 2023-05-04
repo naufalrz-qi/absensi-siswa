@@ -1,82 +1,69 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Absensi Siswa</title>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-	<style>
-		.container {
-			margin-top: 50px;
-		}
-	</style>
-</head>
-<body>
-	<div class="container">
-		<h1>Absensi Siswa</h1>
-		<form>
-			<div class="form-group">
-				<label for="kelas">Kelas:</label>
-				<select class="form-control" id="kelas">
-					<option value="">Pilih kelas</option>
-					<option value="1">10 RPL</option>
-					<option value="2">11 RPL</option>
-					<option value="3">12 RPL</option>
-				</select>
-			</div>
-			<button type="button" class="btn btn-primary" onclick="showAbsensi()">Tampilkan Absensi</button>
-		</form>
-		<br>
-		<table class="table" id="table-absensi">
-			<thead>
-				<tr>
-					<th>No.</th>
-					<th>Nama Siswa</th>
-					<th>kelas</th>
-					<th>Mata Pelajaran</th>
-					<th>Guru</th>
-					<th>Keterangan</th>
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
-		<a class="btn btn-danger" href="{{url_for('logout')}}">logout</a>
-	</div>
+{% extends 'base.html' %}
+{% block main %}
+<div class="container">
+	<h1>Absensi Siswa</h1>
+	<form>
+		<div class="form-group">
+			<label for="kelas">Kelas:</label>
+			<select class="form-control" id="kelas">
+				<option value="">Pilih kelas</option>
+				<option value="1">10 RPL</option>
+				<option value="2">11 RPL</option>
+				<option value="3">12 RPL</option>
+			</select>
+		</div>
+		<button type="button" class="btn btn-primary" onclick="showAbsensi()">Tampilkan Absensi</button>
+	</form>
+	<br>
+	<table class="table" id="table-absensi">
+		<thead>
+			<tr>
+				<th>No.</th>
+				<th>Nama Siswa</th>
+				<th>kelas</th>
+				<th>Mata Pelajaran</th>
+				<th>Guru</th>
+				<th>Keterangan</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+	<a class="btn btn-danger" href="{{url_for('logout')}}">logout</a>
+</div>
+{% endblock %}
+{% block scriptjs %}
+	
+<script>
+	function showAbsensi() {
+		// Mengambil nilai kelas dari form
+		var kelas = $('#kelas').val();
 
-
-
-
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-	<script>
-		function showAbsensi() {
-			// Mengambil nilai kelas dari form
-			var kelas = $('#kelas').val();
-
-			// Membuat request AJAX untuk mengambil data absensi
-			$.ajax({
-				url: '/api/absensi/' + kelas,
-				type: 'GET',
-				success: function(data) {
-					// Menampilkan data absensi ke dalam tabel
-					var table = $('#table-absensi tbody');
-					table.empty();
-					for (var i = 0; i < data.length; i++) {
-						var absensi = data[i];
-						var row = '<tr>' +
-								  '<td>' + (i + 1) + '</td>' +
-								  '<td>' + absensi.nama + '</td>' +
-								  '<td>' + absensi.kelas + '</td>' +
-								  '<td>' + absensi.mata_pelajaran + '</td>' +
-								  '<td>' + absensi.guru + '</td>' +
-								  '<td>' + absensi.keterangan + '</td>' +
-								  '</tr>';
-						table.append(row);
-					}
-				},
-				error: function(jqXHR, textStatus, errorThrown) {
-					alert('Error: ' + textStatus + ' - ' + errorThrown);
+		// Membuat request AJAX untuk mengambil data absensi
+		$.ajax({
+			url: '/api/absensi/' + kelas,
+			type: 'GET',
+			success: function(data) {
+				// Menampilkan data absensi ke dalam tabel
+				var table = $('#table-absensi tbody');
+				table.empty();
+				for (var i = 0; i < data.length; i++) {
+					var absensi = data[i];
+					var row = '<tr>' +
+							  '<td>' + (i + 1) + '</td>' +
+							  '<td>' + absensi.nama + '</td>' +
+							  '<td>' + absensi.kelas + '</td>' +
+							  '<td>' + absensi.mata_pelajaran + '</td>' +
+							  '<td>' + absensi.guru + '</td>' +
+							  '<td>' + absensi.keterangan + '</td>' +
+							  '</tr>';
+					table.append(row);
 				}
-			});
-		}
-	</script>
-</body>
-</html>
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				alert('Error: ' + textStatus + ' - ' + errorThrown);
+			}
+		});
+	}
+</script>
+{% endblock %}
