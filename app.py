@@ -72,6 +72,13 @@ def absensi():
     flash('Harap Login dulu','danger')
     return redirect(url_for('login'))
 
+@app.route('/input_absen')
+def input_absensi():
+    if 'loggedin' in session:
+        return render_template('input_absen.html')
+    flash('Harap Login dulu','danger')
+    return redirect(url_for('login'))
+
 @app.route('/get_siswa/<kelas_id>')
 def get_siswa(kelas_id):
    # Memilih data siswa berdasarkan kelas yang dipilih
@@ -96,7 +103,15 @@ def home():
 
 @app.route('/data-siswa')
 def data_siswa():
-    return render_template('dataSiswa.html')
+    if 'loggedin' in session:
+        return render_template('dataSiswa.html')
+    flash('Harap Login dulu','danger')
+    return redirect(url_for('login'))
+    
+
+@app.route('/simpan_absensi', methods=['POST'])
+def simpan_absensi():
+    return redirect(url_for('data_siswa'))
 
 @app.route("/siswa", methods=["POST"])
 def siswa():
@@ -106,15 +121,15 @@ def siswa():
     siswa = cursor.fetchall()
     return render_template("siswa.html", siswa=siswa)
 
-@app.route('/api/absensi/<kelas>', methods=['GET'])
-def get_absensi(kelas):
+@app.route('/api/absensi/<kelas>&<tanggal>&<mapel>', methods=['GET'])
+def get_absensi(kelas,tanggal,mapel):
 	# Membuat kursor untuk mengirim perintah ke database
 	cursor = mysql.connection.cursor()
 
 
 	# Menjalankan query untuk mengambil data absensi berdasarkan kelas
-	query = "SELECT siswa.nama, kelas.nama as kelas,mata_pelajaran.nama, guru.nama as guru, absensi.keterangan FROM absensi JOIN siswa ON absensi.siswa_id = siswa.id JOIN kelas ON siswa.kelas_id = kelas.id JOIN guru ON absensi.guru_id = guru.id JOIN mata_pelajaran ON absensi.mata_pelajaran_id = mata_pelajaran.id WHERE siswa.kelas_id = %s"
-	cursor.execute(query, (kelas,))
+	query = "SELECT siswa.nama, kelas.nama as kelas,mata_pelajaran.nama, guru.nama, absensi.keterangan, absensi.siswa_id FROM absensi JOIN siswa ON absensi.siswa_id = siswa.id JOIN kelas ON siswa.kelas_id = kelas.id JOIN mata_pelajaran ON absensi.mata_pelajaran_id = mata_pelajaran.id JOIN guru ON mata_pelajaran.id_guru = guru.id  WHERE siswa.kelas_id = %s  AND absensi.tanggal = %s AND absensi.mata_pelajaran_id = %s"
+	cursor.execute(query, (kelas,tanggal,mapel,))
 
 	# Mengambil semua baris hasil query
 	rows = cursor.fetchall()
@@ -130,7 +145,38 @@ def get_absensi(kelas):
 			'kelas': row[1],
 			'mata_pelajaran': row[2],
 			'guru': row[3],
-			'keterangan': row[4]
+			'keterangan': row[4],
+            'siswa_id':row[5]
+		})
+
+	# Mengembalikan data absensi dalam format JSON
+	return jsonify(absensi)
+
+@app.route('/api/input_absensi/<kelas>&<mapel>', methods=['GET'])
+def get_input_absensi(kelas,mapel):
+	# Membuat kursor untuk mengirim perintah ke database
+	cursor = mysql.connection.cursor()
+
+
+	# Menjalankan query untuk mengambil data absensi berdasarkan kelas
+	query = "SELECT siswa.nama, kelas.nama as kelas,mata_pelajaran.nama, guru.nama, siswa.id FROM siswa JOIN kelas ON siswa.kelas_id = kelas.id JOIN mata_pelajaran ON kelas.id = mata_pelajaran.id_kelas JOIN guru ON mata_pelajaran.id_guru = guru.id  WHERE siswa.kelas_id = %s AND mata_pelajaran.id = %s"
+	cursor.execute(query, (kelas,mapel,))
+
+	# Mengambil semua baris hasil query
+	rows = cursor.fetchall()
+
+	# Menutup kursor
+	cursor.close()
+
+	# Menyusun data absensi ke dalam bentuk array of dict
+	absensi = []
+	for row in rows:
+		absensi.append({
+			'nama': row[0],
+			'kelas': row[1],
+			'mata_pelajaran': row[2],
+			'guru': row[3],
+            'siswa_id':row[4]
 		})
 
 	# Mengembalikan data absensi dalam format JSON

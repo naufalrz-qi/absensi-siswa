@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block main %}
 <div class="container">
-	<h2 class="d-flex justify-content-center">Lihat Absensi</h2>
+	<h2 class="d-flex justify-content-center">Input Absensi</h2>
 	<hr>
 	<form>
 		<div class="form-group">
@@ -12,7 +12,7 @@
 				<option value="2">11 RPL</option>
 				<option value="3">12 RPL</option>
 			</select>
-			<label for="kelas">Mata Pelajaran:</label>
+            <label for="kelas">Mata Pelajaran:</label>
 			<select class="form-control" id="mapel">
 				<option value="">Pilih Mapel</option>
 				<option value="1">MATEMATIKA</option>
@@ -20,28 +20,29 @@
 				<option value="3">PEMROGRAMAN WEB</option>
 				<option value="4">PEMROGRAMAN DESKTOP</option>
 			</select>
-				<label for="tanggal">Pilih tanggal:</label>
-				<input class="form-control" type="date" id="tanggal">	  
 		</div>
 		<button type="button" class="btn btn-primary" onclick="showAbsensi()">Tampilkan Absensi</button>
 	</form>
 	<br>
-	<table class="table" id="table-absensi">
-		<thead>
-			<tr>
-				<th>No.</th>
-				<th>Nama Siswa</th>
-				<th>kelas</th>
-				<th>Mata Pelajaran</th>
-				<th>Guru</th>
-				<th>Keterangan</th>
-			</tr>
-		</thead>
-		<tbody>
-		</tbody>
-	</table>
-	<a class="btn btn-primary" href="/input_absen">Input Absen</a>
-	<a class="btn btn-danger" href="{{url_for('logout')}}">logout</a>
+    <form action="/simpan_absensi" method="post">
+        <table class="table" id="table-absensi">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Nama Siswa</th>
+                    <th>kelas</th>
+                    <th>Mata Pelajaran</th>
+                    <th>Guru</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary"> Simpan </button>
+        <a class="btn btn-danger" href="/input_absensi">Cancel</a>
+    </form>
+	
 </div>
 {% endblock %}
 {% block scriptjs %}
@@ -49,27 +50,34 @@
 <script>
 	function showAbsensi() {
 		// Mengambil nilai kelas dari form
-		var kelas = $('#kelas').val();
+        var kelas = $('#kelas').val();
 		var tanggal = $('#tanggal').val();
 		var mapel = $('#mapel').val();
 
 		// Membuat request AJAX untuk mengambil data absensi
 		$.ajax({
-			url: '/api/absensi/' + kelas + '&' + tanggal+ '&' + mapel,
+			url: '/api/input_absensi/' + kelas + '&' + mapel,
 			type: 'GET',
 			success: function(data) {
 				// Menampilkan data absensi ke dalam tabel
 				var table = $('#table-absensi tbody');
 				table.empty();
+                let temp_html = ``
 				for (var i = 0; i < data.length; i++) {
 					var absensi = data[i];
+                    let id_siswa = absensi.siswa_id
+                    let temp_html = `
+                    <label><input type="radio" name="${id_siswa}_keterangan" value="izin">Izin</label><br>
+                    <label><input type="radio" name="${id_siswa}_keterangan" value="sakit">Sakit</label><br>
+                    <label><input type="radio" name="${id_siswa}_keterangan" value="alpha">Alpha</label><br>  
+                    ` 
 					var row = '<tr>' +
 							  '<td>' + (i + 1) + '</td>' +
 							  '<td>' + absensi.nama + '</td>' +
 							  '<td>' + absensi.kelas + '</td>' +
 							  '<td>' + absensi.mata_pelajaran.split('.')[1] + '</td>' +
 							  '<td>' + absensi.guru + '</td>' +
-							  '<td>' + absensi.keterangan + '</td>' +
+							  '<td>' + temp_html + '</td>' +
 							  '</tr>';
 					table.append(row);
 				}
