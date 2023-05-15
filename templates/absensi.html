@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+{% block title %}
+   <title>Lihat Absensi</title>
+{% endblock %}
 {% block main %}
 <div class="container">
 	<h2 class="d-flex justify-content-center">Lihat Absensi</h2>
@@ -23,7 +26,8 @@
 				<label for="tanggal">Pilih tanggal:</label>
 				<input class="form-control" type="date" id="tanggal">	  
 		</div>
-		<button type="button" class="btn btn-primary" onclick="showAbsensi()">Tampilkan Absensi</button>
+		<button type="button" class="btn btn-primary mt-3" onclick="showAbsensi()">Tampilkan Absensi</button>
+		<p>Jika ingin menginput absen terbaru, <a href="/input_absen">klik disini!</a></p>
 	</form>
 	<br>
 	<table class="table" id="table-absensi">
@@ -40,7 +44,7 @@
 		<tbody>
 		</tbody>
 	</table>
-	<a class="btn btn-primary" href="/input_absen">Input Absen</a>
+
 	<a class="btn btn-danger" href="{{url_for('logout')}}">logout</a>
 </div>
 {% endblock %}

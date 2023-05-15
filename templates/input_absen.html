@@ -1,4 +1,7 @@
 {% extends 'base.html' %}
+{% block title %}
+   <title>Input Absensi</title>
+{% endblock %}
 {% block main %}
 <div class="container">
 	<h2 class="d-flex justify-content-center">Input Absensi</h2>
@@ -21,7 +24,7 @@
 				<option value="4">PEMROGRAMAN DESKTOP</option>
 			</select>
 		</div>
-		<button type="button" class="btn btn-primary" onclick="showAbsensi()">Tampilkan Absensi</button>
+		<button type="button" class="btn btn-primary my-3" onclick="showAbsensi()">Tampilkan</button>
 	</form>
 	<br>
     <form action="/simpan_absensi" method="post">
