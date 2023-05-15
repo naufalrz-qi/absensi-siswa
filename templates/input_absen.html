@@ -67,9 +67,10 @@
 					var absensi = data[i];
                     let id_siswa = absensi.siswa_id
                     let temp_html = `
-                    <label><input type="radio" name="${id_siswa}_keterangan" value="izin">Izin</label><br>
-                    <label><input type="radio" name="${id_siswa}_keterangan" value="sakit">Sakit</label><br>
-                    <label><input type="radio" name="${id_siswa}_keterangan" value="alpha">Alpha</label><br>  
+                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Izin">Izin</label>
+                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Hadir">Hadir</label>
+                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Sakit">Sakit</label>
+                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Alpha">Alpha</label>  
                     ` 
 					var row = '<tr>' +
 							  '<td>' + (i + 1) + '</td>' +
