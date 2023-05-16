@@ -36,7 +36,7 @@ def login():
         else:
             session['loggedin'] = True
             session['username'] = akun[1]
-            return redirect(url_for('absensi'))
+            return redirect(url_for('userpage'))
     return render_template('login.html')
 
 @app.route('/registrasi', methods=('GET','POST'))
@@ -100,7 +100,17 @@ def get_siswa(kelas_id):
 
 @app.route('/')
 def home():
+    if 'loggedin' in session:
+        return render_template('userpage.html')
     return render_template('index.html')
+
+@app.route('/dashboard')
+def userpage():
+    if 'loggedin' in session:
+        return render_template('userpage.html')
+    flash('Harap Login dulu','danger')
+    return redirect(url_for('login'))
+    
 
 @app.route('/data-siswa')
 def data_siswa():
@@ -118,18 +128,47 @@ def simpan_absensi():
         siswa_id = int(data.split('_')[0])
         mapel_id = int(data.split('_')[1])
         date = datetime.now().strftime('%Y-%m-%d')
-        data_absen.append({
-            'siswa_id':siswa_id,
-            'mata_pelajaran_id':mapel_id,
-            'tanggal':date,
-            'keterangan':keterangan
+        # data_absen.append({
+        #     'siswa_id':siswa_id,
+        #     'mata_pelajaran_id':mapel_id,
+        #     'tanggal':date,
+        #     'keterangan':keterangan
+        #     })
+        
+        # Membuat kursor untuk mengirim perintah ke database
+
+
+        # Menjalankan query untuk mengambil data absensi berdasarkan kelas
+        query = "SELECT siswa.nama, kelas.nama as kelas,mata_pelajaran.nama, guru.nama, absensi.keterangan, absensi.siswa_id FROM absensi JOIN siswa ON absensi.siswa_id = siswa.id JOIN kelas ON siswa.kelas_id = kelas.id JOIN mata_pelajaran ON absensi.mata_pelajaran_id = mata_pelajaran.id JOIN guru ON mata_pelajaran.id_guru = guru.id  WHERE absensi.tanggal = %s AND absensi.mata_pelajaran_id = %s"
+        cursor.execute(query, (mapel_id,date))
+
+        # Mengambil semua baris hasil query
+        rows = cursor.fetchall()
+
+        # Menutup kursor
+        cursor.close()
+
+        # Menyusun data absensi ke dalam bentuk array of dict
+        absensi = []
+        for row in rows:
+            absensi.append({
+                'nama': row[0],
+                'kelas': row[1],
+                'mata_pelajaran': row[2],
+                'guru': row[3],
+                'keterangan':row[4],
+                'siswa_id':row[5],
             })
-        query = "INSERT INTO absensi (siswa_id, tanggal, keterangan, mata_pelajaran_id) VALUES (%s, %s, %s, %s)"
-        cursor.execute(query, (siswa_id, date, keterangan, mapel_id))
-        mysql.connection.commit()
-    
-    cursor.close()
-    return render_template('result.html')
+  
+        if absensi is not None:
+            return render_template('warning.html')
+        else:
+            query = "INSERT INTO absensi (siswa_id, tanggal, keterangan, mata_pelajaran_id) VALUES (%s, %s, %s, %s)"
+            cursor.execute(query, (siswa_id, date, keterangan, mapel_id))
+            mysql.connection.commit()
+        
+            cursor.close()
+            return render_template('result.html')
 
 # Ini untuk api siswa
 @app.route("/siswa", methods=["POST"])

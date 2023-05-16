@@ -36,14 +36,18 @@
                     <th>kelas</th>
                     <th>Mata Pelajaran</th>
                     <th>Guru</th>
-                    <th>Keterangan</th>
+                    <th>Keterangan | <label>
+						<input type="checkbox" id="hadirSemua" onchange="toggleRadio('hadirSemua','radioHadir')"> Hadir Semua?
+					  </label></th>
+					
                 </tr>
             </thead>
             <tbody>
             </tbody>
         </table>
         <button type="submit" class="btn btn-primary"> Simpan </button>
-        <a class="btn btn-danger" href="/input_absensi">Cancel</a>
+        <a class="btn btn-danger" href="/input_absen">Cancel</a>
+
     </form>
 	
 </div>
@@ -51,6 +55,14 @@
 {% block scriptjs %}
 	
 <script>
+	function toggleRadio(checkboxId, radioID){
+		var checkboxes = document.querySelectorAll('input[id="' + radioID + '"]');
+      var pilihSemuaCheckbox = document.getElementById(checkboxId);
+
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = pilihSemuaCheckbox.checked;
+      }
+	}
 	function showAbsensi() {
 		// Mengambil nilai kelas dari form
         var kelas = $('#kelas').val();
@@ -70,10 +82,10 @@
 					var absensi = data[i];
                     let id_siswa = absensi.siswa_id
                     let temp_html = `
-                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Izin">Izin</label>
-                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Hadir">Hadir</label>
-                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Sakit">Sakit</label>
-                    <label><input type="radio" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Alpha">Alpha</label>  
+                    <label><input type="radio" id="radioIzin" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Izin">Izin</label>
+                    <label><input type="radio" id="radioHadir" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Hadir">Hadir</label>
+                    <label><input type="radio" id="radioSakit" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Sakit">Sakit</label>
+                    <label><input type="radio" id="radioAlpha" name="${id_siswa}_${absensi.mata_pelajaran_id}_keterangan" value="Alpha">Alpha</label>  
                     ` 
 					var row = '<tr>' +
 							  '<td>' + (i + 1) + '</td>' +
