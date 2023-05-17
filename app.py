@@ -1,9 +1,12 @@
+# Import library
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_mysqldb import MySQL
 from werkzeug.security import check_password_hash,  generate_password_hash
 from datetime import datetime
 
+# deklarasi flask app
 app = Flask(__name__)
+
 #koneksi
 app.secret_key = 'bebasapasaja'
 app.config['MYSQL_HOST'] ='localhost'
@@ -12,13 +15,14 @@ app.config['MYSQL_PASSWORD'] =''
 app.config['MYSQL_DB'] ='db_siswa'
 mysql = MySQL(app)
 
-
+# Route Login jika sesi lgin masih ada
 @app.route("/login")
 def index():
     if "username" in session:
-        return redirect(url_for("absensi"))
+        return redirect(url_for("userpage"))
     return render_template("login.html")
  
+ # Route login
 @app.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
@@ -29,6 +33,7 @@ def login():
         cursor = mysql.connection.cursor()
         cursor.execute('SELECT * FROM users WHERE username=%s',(username, ))
         akun = cursor.fetchone()
+        print(akun)
         if akun is None:
             flash('Login Gagal, Cek Username Anda','danger')
         elif not check_password_hash(akun[2], password):
@@ -39,23 +44,29 @@ def login():
             return redirect(url_for('userpage'))
     return render_template('login.html')
 
+# Route registrasi jika dibutuhkan user baru
 @app.route('/registrasi', methods=('GET','POST'))
 def registrasi():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    if session['username'] == 'admin':
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            
+            #cek username atau email
+            cursor = mysql.connection.cursor()
+            cursor.execute('SELECT * FROM users WHERE username=%s',(username, ))
+            akun = cursor.fetchone()
+            if akun is None:
+                cursor.execute('INSERT INTO users VALUES (NULL, %s, %s)', (username, generate_password_hash(password)))
+                mysql.connection.commit()
+                flash('Registrasi Berhasil','success')
+            else :
+                flash('Username atau email sudah ada','danger')
+        return render_template('registrasi.html')
+    else:
         
-        #cek username atau email
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM users WHERE username=%s',(username, ))
-        akun = cursor.fetchone()
-        if akun is None:
-            cursor.execute('INSERT INTO users VALUES (NULL, %s, %s)', (username, generate_password_hash(password)))
-            mysql.connection.commit()
-            flash('Registrasi Berhasil','success')
-        else :
-            flash('Username atau email sudah ada','danger')
-    return render_template('registrasi.html')
+        return render_template('error.html')
+    
 
 #logout
 @app.route('/logout')
@@ -119,56 +130,67 @@ def data_siswa():
     flash('Harap Login dulu','danger')
     return redirect(url_for('login'))
     
+    
 # Ini untuk simpan inputan absensi terbaru
 @app.route('/simpan_absensi', methods=['POST'])
 def simpan_absensi():
     cursor = mysql.connection.cursor()
-    data_absen = []
+    
+    # Menjalankan query untuk mengambil data absensi berdasarkan kelas
+    query = "SELECT tanggal,mata_pelajaran_id from absensi"
+    cursor.execute(query)
+    
+    # Mengambil semua baris hasil query
+    rows = cursor.fetchall()
+
+    # Menutup kursor
+
+    # Menyusun data absensi ke dalam bentuk array of dict
+    absensi = []
+    for row in rows:
+        absensi.append({
+            'tanggal': str(row[0]),
+            'mata_pelajaran_id': row[1],
+        })
+    print(absensi)
+    date = datetime.now().strftime('%Y-%m-%d')
+    print(date)
+   
+    data_temp = []
     for data, keterangan in request.form.items():
         siswa_id = int(data.split('_')[0])
         mapel_id = int(data.split('_')[1])
-        date = datetime.now().strftime('%Y-%m-%d')
-        # data_absen.append({
-        #     'siswa_id':siswa_id,
-        #     'mata_pelajaran_id':mapel_id,
-        #     'tanggal':date,
-        #     'keterangan':keterangan
-        #     })
+        data_temp.append(mapel_id)
         
-        # Membuat kursor untuk mengirim perintah ke database
+    if len(absensi) != 0:
+        for absen in absensi:
+            tanggal = absen['tanggal']
+            mapel = absen['mata_pelajaran_id']
+            if tanggal == date and mapel == data_temp[0]:
+                return render_template('warning.html')
+            else:
+                for data, keterangan in request.form.items():
+                    siswa_id = int(data.split('_')[0])
+                    mapel_id = int(data.split('_')[1])
+                    query = "INSERT INTO absensi (siswa_id, tanggal, keterangan, mata_pelajaran_id) VALUES (%s, %s, %s, %s)"
+                    cursor.execute(query, (siswa_id, date, keterangan, mapel_id))
+                    mysql.connection.commit()
 
-
-        # Menjalankan query untuk mengambil data absensi berdasarkan kelas
-        query = "SELECT siswa.nama, kelas.nama as kelas,mata_pelajaran.nama, guru.nama, absensi.keterangan, absensi.siswa_id FROM absensi JOIN siswa ON absensi.siswa_id = siswa.id JOIN kelas ON siswa.kelas_id = kelas.id JOIN mata_pelajaran ON absensi.mata_pelajaran_id = mata_pelajaran.id JOIN guru ON mata_pelajaran.id_guru = guru.id  WHERE absensi.tanggal = %s AND absensi.mata_pelajaran_id = %s"
-        cursor.execute(query, (mapel_id,date))
-
-        # Mengambil semua baris hasil query
-        rows = cursor.fetchall()
-
-        # Menutup kursor
-        cursor.close()
-
-        # Menyusun data absensi ke dalam bentuk array of dict
-        absensi = []
-        for row in rows:
-            absensi.append({
-                'nama': row[0],
-                'kelas': row[1],
-                'mata_pelajaran': row[2],
-                'guru': row[3],
-                'keterangan':row[4],
-                'siswa_id':row[5],
-            })
-  
-        if absensi is not None:
-            return render_template('warning.html')
-        else:
+            cursor.close()
+            return render_template('result.html')
+            
+    else:
+        for data, keterangan in request.form.items():
+            siswa_id = int(data.split('_')[0])
+            mapel_id = int(data.split('_')[1])
+            
+        
             query = "INSERT INTO absensi (siswa_id, tanggal, keterangan, mata_pelajaran_id) VALUES (%s, %s, %s, %s)"
             cursor.execute(query, (siswa_id, date, keterangan, mapel_id))
             mysql.connection.commit()
-        
-            cursor.close()
-            return render_template('result.html')
+
+        cursor.close()
+        return render_template('result.html')
 
 # Ini untuk api siswa
 @app.route("/siswa", methods=["POST"])
@@ -180,6 +202,58 @@ def siswa():
     return render_template("siswa.html", siswa=siswa)
 
 
+@app.route('/api/kelas/')
+def api_kelas():
+    cursor = mysql.connection.cursor()
+
+
+    # Menjalankan query untuk mengambil data absensi berdasarkan kelas
+    query = "select * from kelas"
+    cursor.execute(query)
+
+    # Mengambil semua baris hasil query
+    rows = cursor.fetchall()
+
+    # Menutup kursor
+    cursor.close()
+
+    # Menyusun data absensi ke dalam bentuk array of dict
+    absensi = []
+    for row in rows:
+        absensi.append({
+            'id': row[0],
+            'nama': row[1],
+        })
+
+    # Mengembalikan data absensi dalam format JSON
+    return jsonify(absensi)
+
+@app.route('/api/mapel/')
+def api_mapel():
+    cursor = mysql.connection.cursor()
+
+
+    # Menjalankan query untuk mengambil data absensi berdasarkan kelas
+    query = "select * from mata_pelajaran"
+    cursor.execute(query)
+
+    # Mengambil semua baris hasil query
+    rows = cursor.fetchall()
+
+    # Menutup kursor
+    cursor.close()
+
+    # Menyusun data absensi ke dalam bentuk array of dict
+    absensi = []
+    for row in rows:
+        absensi.append({
+            'id': row[0],
+            'nama': row[1],
+        })
+
+    # Mengembalikan data absensi dalam format JSON
+    return jsonify(absensi)
+    
 @app.route('/api/absensi/<kelas>&<tanggal>&<mapel>', methods=['GET'])
 def get_absensi(kelas,tanggal,mapel):
 	# Membuat kursor untuk mengirim perintah ke database
@@ -243,4 +317,4 @@ def get_input_absensi(kelas,mapel):
 	return jsonify(absensi)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run('0.0.0.0', port=5000 ,debug=True)

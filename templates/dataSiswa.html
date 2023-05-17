@@ -6,15 +6,50 @@
 <label>Pilih Kelas:</label>
 <select id="kelas">
    <option value="">Pilih Kelas</option>
-   <option value="1">Kelas 1</option>
-   <option value="2">Kelas 2</option>
-   <option value="3">Kelas 3</option>
 </select>
 <div id="siswa"></div>
 {% endblock %}
 {% block scriptjs %}
 <script>
+	function opsiMapel(){
+		var mapel = $('#mapel');
+		$.ajax({
+			url: '/api/mapel/',
+			type: 'GET',
+			success: function(data) {
+				
+				for (var i = 0; i < data.length; i++) {
+					var dataMapel = data[i];
+					var nama_mapel = dataMapel.nama
+					var namaMapel = nama_mapel.split('.')[1]
+					var opsi = `
+					<option value="${dataMapel.id}">${namaMapel}</option>`
+	
+					mapel.append(opsi);
+				}
+			},
+		});
+	}
+	function opsiKelas(){
+		var kelas = $('#kelas');
+		$.ajax({
+			url: '/api/kelas/',
+			type: 'GET',
+			success: function(data) {
+				
+				for (var i = 0; i < data.length; i++) {
+					var dataKelas = data[i];
+					var opsi = `
+					<option value="${dataKelas.id}">${dataKelas.nama}</option>`
+		
+					kelas.append(opsi);
+				}
+			},
+		});
+	}
     $(document).ready(function(){
+      opsiKelas();
+		opsiMapel();
         $("#kelas").change(function(){
            var kelasId = $(this).val();
            $.ajax({
