@@ -135,62 +135,7 @@ def data_siswa():
 @app.route('/simpan_absensi', methods=['POST'])
 def simpan_absensi():
     cursor = mysql.connection.cursor()
-    
-    # Menjalankan query untuk mengambil data absensi berdasarkan kelas
-    query = "SELECT tanggal,mata_pelajaran_id from absensi"
-    cursor.execute(query)
-    
-    # Mengambil semua baris hasil query
-    rows = cursor.fetchall()
-
-    # Menutup kursor
-
-    # Menyusun data absensi ke dalam bentuk array of dict
-    absensi = []
-    for row in rows:
-        absensi.append({
-            'tanggal': str(row[0]),
-            'mata_pelajaran_id': row[1],
-        })
-    print(absensi)
-    date = datetime.now().strftime('%Y-%m-%d')
-    print(date)
-   
-    data_temp = []
-    for data, keterangan in request.form.items():
-        siswa_id = int(data.split('_')[0])
-        mapel_id = int(data.split('_')[1])
-        data_temp.append(mapel_id)
-        
-    if len(absensi) != 0:
-        for absen in absensi:
-            tanggal = absen['tanggal']
-            mapel = absen['mata_pelajaran_id']
-            if tanggal == date and mapel == data_temp[0]:
-                return render_template('warning.html')
-            else:
-                for data, keterangan in request.form.items():
-                    siswa_id = int(data.split('_')[0])
-                    mapel_id = int(data.split('_')[1])
-                    query = "INSERT INTO absensi (siswa_id, tanggal, keterangan, mata_pelajaran_id) VALUES (%s, %s, %s, %s)"
-                    cursor.execute(query, (siswa_id, date, keterangan, mapel_id))
-                    mysql.connection.commit()
-
-            cursor.close()
-            return render_template('result.html')
-            
-    else:
-        for data, keterangan in request.form.items():
-            siswa_id = int(data.split('_')[0])
-            mapel_id = int(data.split('_')[1])
-            
-        
-            query = "INSERT INTO absensi (siswa_id, tanggal, keterangan, mata_pelajaran_id) VALUES (%s, %s, %s, %s)"
-            cursor.execute(query, (siswa_id, date, keterangan, mapel_id))
-            mysql.connection.commit()
-
-        cursor.close()
-        return render_template('result.html')
+    return render_template("result.html")
 
 # Ini untuk api siswa
 @app.route("/siswa", methods=["POST"])
