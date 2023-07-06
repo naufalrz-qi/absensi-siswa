@@ -4,18 +4,24 @@
 {% endblock %}
 {% block main %}
 <div class="container">
-	<h2 class="d-flex justify-content-center p-5 p-md-0 p-lg-0">Lihat Absensi</h2>
+	<h2 class="d-flex justify-content-center">Lihat Absensi</h2>
 	<hr>
-	<form class="p-5 p-md-0 p-lg-0">
+	<form>
 		<div class="form-group">
 			<label for="kelas">Kelas:</label>
 			<select class="form-control" id="kelas">
-				<option value="">Pilih Kelas</option>
+				<option value="">Pilih kelas</option>
+				<option value="1">10 RPL</option>
+				<option value="2">11 RPL</option>
+				<option value="3">12 RPL</option>
 			</select>
-			<label for="mapel">Mata Pelajaran:</label>
+			<label for="kelas">Mata Pelajaran:</label>
 			<select class="form-control" id="mapel">
 				<option value="">Pilih Mapel</option>
-
+				<option value="1">MATEMATIKA</option>
+				<option value="2">PEMROGRAMAN MOBILE</option>
+				<option value="3">PEMROGRAMAN WEB</option>
+				<option value="4">PEMROGRAMAN DESKTOP</option>
 			</select>
 				<label for="tanggal">Pilih tanggal:</label>
 				<input class="form-control" type="date" id="tanggal">	  
@@ -24,7 +30,7 @@
 		<p>Jika ingin menginput absen terbaru, <a href="/input_absen">klik disini!</a></p>
 	</form>
 	<br>
-	<table class="table p-5 p-md-0 p-lg-0" id="table-absensi">
+	<table class="table" id="table-absensi">
 		<thead>
 			<tr>
 				<th>No.</th>
@@ -38,54 +44,13 @@
 		<tbody>
 		</tbody>
 	</table>
-	<div class="p-5 p-md-0 p-lg-0">
+
 	<a class="btn btn-danger" href="{{url_for('logout')}}">logout</a>
-	</div>
 </div>
 {% endblock %}
 {% block scriptjs %}
 	
 <script>
-	$(document).ready(function(){
-		opsiKelas();
-		opsiMapel();
-	})
-	function opsiMapel(){
-		var mapel = $('#mapel');
-		$.ajax({
-			url: '/api/mapel/',
-			type: 'GET',
-			success: function(data) {
-				
-				for (var i = 0; i < data.length; i++) {
-					var dataMapel = data[i];
-					var nama_mapel = dataMapel.nama
-					var namaMapel = nama_mapel.split('.')[1]
-					var opsi = `
-					<option value="${dataMapel.id}">${namaMapel}</option>`
-	
-					mapel.append(opsi);
-				}
-			},
-		});
-	}
-	function opsiKelas(){
-		var kelas = $('#kelas');
-		$.ajax({
-			url: '/api/kelas/',
-			type: 'GET',
-			success: function(data) {
-				
-				for (var i = 0; i < data.length; i++) {
-					var dataKelas = data[i];
-					var opsi = `
-					<option value="${dataKelas.id}">${dataKelas.nama}</option>`
-		
-					kelas.append(opsi);
-				}
-			},
-		});
-	}
 	function showAbsensi() {
 		// Mengambil nilai kelas dari form
 		var kelas = $('#kelas').val();
@@ -99,11 +64,9 @@
 			success: function(data) {
 				// Menampilkan data absensi ke dalam tabel
 				var table = $('#table-absensi tbody');
-				
 				table.empty();
 				for (var i = 0; i < data.length; i++) {
 					var absensi = data[i];
-					
 					var row = '<tr>' +
 							  '<td>' + (i + 1) + '</td>' +
 							  '<td>' + absensi.nama + '</td>' +

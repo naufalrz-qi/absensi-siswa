@@ -4,26 +4,31 @@
 {% endblock %}
 {% block main %}
 <div class="container">
-	<h2 class="d-flex justify-content-center p-5 p-md-0 p-lg-0">Input Absensi</h2>
+	<h2 class="d-flex justify-content-center">Input Absensi</h2>
 	<hr>
-	<form class="p-5 p-md-0 p-lg-0">
+	<form>
 		<div class="form-group">
 			<label for="kelas">Kelas:</label>
 			<select class="form-control" id="kelas">
 				<option value="">Pilih kelas</option>
-
+				<option value="1">10 RPL</option>
+				<option value="2">11 RPL</option>
+				<option value="3">12 RPL</option>
 			</select>
             <label for="kelas">Mata Pelajaran:</label>
-			<select class="form-control" id="mapel" name="mapel">
+			<select class="form-control" id="mapel">
 				<option value="">Pilih Mapel</option>
-
+				<option value="1">MATEMATIKA</option>
+				<option value="2">PEMROGRAMAN MOBILE</option>
+				<option value="3">PEMROGRAMAN WEB</option>
+				<option value="4">PEMROGRAMAN DESKTOP</option>
 			</select>
 		</div>
 		<button type="button" class="btn btn-primary my-3" onclick="showAbsensi()">Tampilkan</button>
 	</form>
 	<br>
     <form action="/simpan_absensi" method="post">
-        <table class="table p-5 p-md-0 p-lg-0" id="table-absensi">
+        <table class="table" id="table-absensi">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -40,11 +45,8 @@
             <tbody>
             </tbody>
         </table>
-		<div class="p-5 p-md-0 p-lg-0">
-			<button type="submit" class="btn btn-primary"> Simpan </button>
-			<a class="btn btn-danger" href="/input_absen">Cancel</a>
-		</div>
-      
+        <button type="submit" class="btn btn-primary"> Simpan </button>
+        <a class="btn btn-danger" href="/input_absen">Cancel</a>
 
     </form>
 	
@@ -53,46 +55,6 @@
 {% block scriptjs %}
 	
 <script>
-	$(document).ready(function(){
-		opsiKelas();
-		opsiMapel();
-	})
-	function opsiMapel(){
-		var mapel = $('#mapel');
-		$.ajax({
-			url: '/api/mapel/',
-			type: 'GET',
-			success: function(data) {
-				
-				for (var i = 0; i < data.length; i++) {
-					var dataMapel = data[i];
-					var nama_mapel = dataMapel.nama
-					var namaMapel = nama_mapel.split('.')[1]
-					var opsi = `
-					<option value="${dataMapel.id}">${namaMapel}</option>`
-	
-					mapel.append(opsi);
-				}
-			},
-		});
-	}
-	function opsiKelas(){
-		var kelas = $('#kelas');
-		$.ajax({
-			url: '/api/kelas/',
-			type: 'GET',
-			success: function(data) {
-				
-				for (var i = 0; i < data.length; i++) {
-					var dataKelas = data[i];
-					var opsi = `
-					<option value="${dataKelas.id}">${dataKelas.nama}</option>`
-		
-					kelas.append(opsi);
-				}
-			},
-		});
-	}
 	function toggleRadio(checkboxId, radioID){
 		var checkboxes = document.querySelectorAll('input[id="' + radioID + '"]');
       var pilihSemuaCheckbox = document.getElementById(checkboxId);
@@ -101,24 +63,12 @@
         checkboxes[i].checked = pilihSemuaCheckbox.checked;
       }
 	}
-	function kirimMapel(){
-		var mapel = $('#mapel').val();
-		$.ajax({
-			url:'/simpan_absensi',
-			type:'POST',
-			data:{
-				'mapelID':mapel,
-			}
-
-		})
-	}
 	function showAbsensi() {
 		// Mengambil nilai kelas dari form
         var kelas = $('#kelas').val();
-	
+		var tanggal = $('#tanggal').val();
 		var mapel = $('#mapel').val();
 
-		
 		// Membuat request AJAX untuk mengambil data absensi
 		$.ajax({
 			url: '/api/input_absensi/' + kelas + '&' + mapel,
